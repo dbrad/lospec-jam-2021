@@ -1,3 +1,4 @@
+import { assert } from "./debug";
 import { gl_createTexture } from "./gl";
 
 export type Texture = {
@@ -58,7 +59,39 @@ let sheet: TextureAssetJson = {
       _y: 16,
       _w: 8,
       _h: 8
-    }
+    },
+    {
+      _type: "r",
+      _name: ["devil_idle_01", "devil_idle_02", "devil_idle_03", "devil_idle_04"],
+      _x: 0,
+      _y: 32,
+      _w: 16,
+      _h: 16
+    },
+    {
+      _type: "r",
+      _name: ["devil_walk_01", "devil_walk_02", "devil_walk_03", "devil_walk_04", "devil_walk_05", "devil_walk_06", "devil_walk_07", "devil_walk_08", "devil_walk_09", "devil_walk_10", "devil_walk_11", "devil_walk_12"],
+      _x: 0,
+      _y: 48,
+      _w: 16,
+      _h: 16
+    },
+    {
+      _type: "r",
+      _name: ["mountain_a_01", "mountain_a_02", "mountain_a_03", "mountain_a_04", "mountain_b_01", "mountain_b_02", "mountain_b_03"],
+      _x: 0,
+      _y: 64,
+      _w: 16,
+      _h: 16
+    },
+    {
+      _type: "r",
+      _name: ["ground_01", "ground_02", "ground_03", "forest_01", "forest_02", "forest_03", "skyline_01", "skyline_02", "skyline_03", "skyline_04", "skyline_05"],
+      _x: 0,
+      _y: 80,
+      _w: 16,
+      _h: 16
+    },
   ]
 };
 
@@ -122,3 +155,12 @@ export function loadSpriteSheet(): Promise<void>
     }
   });
 };
+
+export function getTexture(textureName: string): Texture
+{
+  let texture = TEXTURE_CACHE.get(textureName);
+  // @ifdef DEBUG
+  assert(texture !== undefined, `Unable to load texture "${ textureName }"`);
+  // @endif
+  return texture;
+}

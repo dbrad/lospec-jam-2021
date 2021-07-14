@@ -1,16 +1,14 @@
-import { Align, pushQuad, pushText } from "./draw";
-import { SCREEN_CENTER_X, SCREEN_CENTER_Y, SCREEN_HEIGHT, SCREEN_WIDTH } from "./screen";
-import { allColours, white } from "./palettte";
+import { Interpolators, interpolate } from "./interpolate";
+import { SCREEN_CENTER_Y, SCREEN_HEIGHT, SCREEN_WIDTH } from "./screen";
+import { allColours, black, darkred } from "./palettte";
 import { gl_clear, gl_flush, gl_getContext, gl_init, gl_setClear } from "./gl";
 import { initStats, tickStats } from "./stats";
+import { pushScene, registerScene, renderScene, updateScene } from "./scene";
+import { setupMainMenu, updateMainMenu } from "./scenes/main-menu";
 
 import { assert } from "./debug";
 import { loadSpriteSheet } from "./texture";
-
-function randomInt(min: number, max: number): number
-{
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+import { pushQuad } from "./draw";
 
 window.addEventListener("load", async () =>
 {
@@ -23,6 +21,8 @@ window.addEventListener("load", async () =>
   await loadSpriteSheet();
   initStats();
 
+  registerScene(`MainMenu`, setupMainMenu, updateMainMenu);
+
   let delta: number;
   let then: number;
   function loop(now: number): void
@@ -30,22 +30,22 @@ window.addEventListener("load", async () =>
     delta = now - then;
     then = now;
     gl_clear();
-    // for (let x = 0; x < SCREEN_WIDTH; x += 8)
-    // {
-    //   for (let y = 0; y < SCREEN_HEIGHT; y += 8)
-    //   {
-    //     let colour = allColours[randomInt(0, 9)];
-    //     pushQuad(x, y, 8, 8, colour);
-    //   }
-    // }
-    pushText(`LOSPEC JAM 2021`, SCREEN_CENTER_X, SCREEN_CENTER_Y - 12, { _textAlign: Align.Center });
-    pushText(`Entry by David Brad`, SCREEN_CENTER_X, SCREEN_CENTER_Y - 4, { _textAlign: Align.Center });
     let i = 0;
-    for (const colour of allColours)
+    // for (const colour of allColours)
+    // {
+    //   pushQuad(20 + (i * 20), SCREEN_CENTER_Y + 8, 20, 20, colour);
+    //   i++;
+    // }
+    pushQuad(0, SCREEN_HEIGHT - 64, SCREEN_WIDTH, 32, darkred);
+    pushQuad(0, SCREEN_HEIGHT - 32, SCREEN_WIDTH, 32, black);
+
+    for (const [_, interpolator] of Interpolators)
     {
-      pushQuad(20 + (i * 20), SCREEN_CENTER_Y + 8, 20, 20, colour);
-      i++;
+      interpolate(now, interpolator);
     }
+
+    updateScene(now, delta);
+    renderScene(now, delta);
     gl_flush();
 
     // @ifdef DEBUG
@@ -55,6 +55,7 @@ window.addEventListener("load", async () =>
     requestAnimationFrame(loop);
   }
   gl_setClear(29, 28, 31);
+  pushScene("MainMenu");
   then = performance.now();
   requestAnimationFrame(loop);
 });
